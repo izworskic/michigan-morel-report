@@ -89,8 +89,16 @@ async function stnData(uid, sdate, edate) {
 
 // Walk daily records accumulating growing degree days base 50 and a trailing
 // seven day mean of the daily average.
+// Completeness matters more than it looks. The Cadillac station ran 74 percent
+// valid days in 2026 while its neighbours ran 99, which made its accumulated
+// total look 58 percent below normal when the region was actually near normal.
+// A station with holes in it produces a confidently wrong number, so stations
+// below the threshold are skipped rather than trusted.
+const MIN_COMPLETENESS = 0.9;
+
 function walk(rows) {
   let gdd = 0;
+  let valid = 0;
   const trail = [];
   let last = null;
   let firstPrime = null;
@@ -98,6 +106,7 @@ function walk(rows) {
   for (const [d, mxs, mns] of rows) {
     const mx = parseFloat(mxs), mn = parseFloat(mns);
     if (!isFinite(mx) || !isFinite(mn)) continue;
+    valid++;
     const avg = (mx + mn) / 2;
     gdd += Math.max(0, avg - 50);
     trail.push(avg);
@@ -107,7 +116,8 @@ function walk(rows) {
     if (trail.length === 7 && t7 >= T_OVER) peaked = true;
     last = { date: d, avg, t7, gdd };
   }
-  return { last, firstPrime, peaked };
+  const completeness = rows.length ? valid / rows.length : 0;
+  return { last, firstPrime, peaked, valid, total: rows.length, completeness };
 }
 
 export default async function handler() {
@@ -119,14 +129,17 @@ export default async function handler() {
   const out = [];
   for (const reg of REGIONS) {
     // current season, first station that returns usable data
-    let cur = null, usedUid = null;
+    let cur = null, usedUid = null, best = null, bestUid = null;
     for (const uid of reg.uids) {
       const rows = await stnData(uid, seasonStart, today);
-      if (rows && rows.length) {
-        const w = walk(rows);
-        if (w.last) { cur = w; usedUid = uid; break; }
-      }
+      if (!rows || !rows.length) continue;
+      const w = walk(rows);
+      if (!w.last) continue;
+      if (!best || w.completeness > best.completeness) { best = w; bestUid = uid; }
+      if (w.completeness >= MIN_COMPLETENESS) { cur = w; usedUid = uid; break; }
     }
+    // If no station clears the bar, use the most complete one and say so.
+    if (!cur && best) { cur = best; usedUid = bestUid; }
 
     // ten year normal of accumulated GDD to this same calendar date
     let normal = null;
@@ -137,7 +150,7 @@ export default async function handler() {
         const rows = await stnData(usedUid, `${y}-03-01`, `${y}-${md}`);
         if (!rows || !rows.length) continue;
         const w = walk(rows);
-        if (w.last) sums.push(w.last.gdd);
+        if (w.last && w.completeness >= MIN_COMPLETENESS) sums.push(w.last.gdd);
       }
       if (sums.length >= 5) {
         sums.sort((a, b) => a - b);
@@ -158,6 +171,8 @@ export default async function handler() {
       towns: reg.towns,
       stationUid: usedUid,
       observedThrough: cur && cur.last ? cur.last.date : null,
+      stationCompleteness: cur ? Math.round(cur.completeness * 100) : null,
+      stationBelowThreshold: cur ? cur.completeness < MIN_COMPLETENESS : null,
       trailing7dayF: t7 === null ? null : Math.round(t7 * 10) / 10,
       gddBase50: cur && cur.last ? Math.round(cur.last.gdd) : null,
       firstPrimeDate: cur ? cur.firstPrime : null,
