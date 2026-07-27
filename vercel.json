@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "public",
+  "headers": [
+    { "source": "/morel.js", "headers": [{ "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" }] }
+  ]
+}

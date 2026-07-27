@@ -1,0 +1,37 @@
+# Michigan Morel Report
+
+> Tracks how far north Michigan's soil has warmed into the morel window, region by region, against a ten year
+> normal. Built and maintained by Chris Izworski in Bay City.
+
+## What makes this different
+Morel content online is almost entirely folklore and calendar dates. The actual trigger is soil temperature:
+morels fruit when soil at a few inches settles into roughly the low to mid fifties Fahrenheit, a few days after
+rain. Michigan runs over four hundred miles south to north, so that trigger arrives about five weeks apart at
+the two ends. This site tracks the wave rather than publishing a date.
+
+## Honest limits, stated on the site itself
+- Michigan has only about three public soil temperature stations, so soil warming here is MODELLED from air
+  temperature using a trailing seven day mean, plus growing degree days base 50F accumulated from March 1,
+  compared against a ten year normal. It is timing guidance, not a thermometer reading.
+- The model is gated on the calendar (March through June). Without that gate autumn temperatures descending
+  through the same band would falsely report a prime window in October.
+- It cannot see slope, aspect, canopy, or soil moisture. Indicator plants beat it at local scale.
+- It is NOT an identification guide and never says a mushroom is safe to eat. False morels grow in the same
+  woods at the same time and some contain gyromitrin.
+- It does not publish anybody's spots.
+
+## Pages, all one click from the front page
+- [Where the season is](https://morel.chrisizworski.com/)
+- [When morels come up](https://morel.chrisizworski.com/when-morels-come-up.html): the trigger and the model
+- [False morels](https://morel.chrisizworski.com/false-morels.html): safety
+- [Where morels grow](https://morel.chrisizworski.com/where-morels-grow.html): habitat, trees, burns
+- [Indicator plants](https://morel.chrisizworski.com/indicator-plants.html): trillium, fiddleheads, lilac
+- Regions: [Southern](https://morel.chrisizworski.com/southern-michigan.html),
+  [Central](https://morel.chrisizworski.com/central-michigan.html),
+  [Northern Lower](https://morel.chrisizworski.com/northern-lower.html),
+  [Eastern UP](https://morel.chrisizworski.com/eastern-up.html),
+  [Western UP](https://morel.chrisizworski.com/western-up.html)
+
+## Data
+Applied Climate Information System (ACIS), aggregating NOAA and NWS station records. Michigan DNR for land
+rules. Michigan Mushroom Hunters Club for identification learning.
