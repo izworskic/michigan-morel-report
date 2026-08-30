@@ -5,7 +5,7 @@ PERSON_NODE = {
     "@type": "Person",
     "@id": PERSON_ID,
     "name": "Chris Izworski",
-    "url": "https://chrisizworski.com",
+    "url": "https://chrisizworski.com/chris-izworski/",
     "sameAs": [
         "https://chrisizworski.com",
         "https://michigantroutreport.com/chris-izworski/",
@@ -122,7 +122,7 @@ def head(title, desc, canonical, ld_json):
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         f'<title>{title}</title>'
         f'<meta name="description" content="{desc}">'
-        f'<link rel="canonical" href="{canonical}">'
+        f'<link rel="canonical" href="{canonical}">'\n        '<link rel="author" href="https://chrisizworski.com/chris-izworski/">'
         f'<meta property="og:title" content="{title}">'
         f'<meta property="og:description" content="{desc}">'
         f'<meta property="og:url" content="{canonical}">'
@@ -179,7 +179,7 @@ FOOTER = (
     '<a href="https://phenology.chrisizworski.com">Saginaw Bay phenology dashboard</a>, the '
     '<a href="https://michigantroutreport.com">Michigan Trout Report</a>, and '
     '<a href="https://weekend.chrisizworski.com">Michigan Outdoor Weekend</a>. '
-    'Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a> in Bay City. '
+    'Built and maintained by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> in Bay City. '
     'Nothing here is an identification guide and nothing here says a mushroom is safe to eat.'
     '</footer>'
     '</div></div><script src="/morel.js"></script></body></html>'
