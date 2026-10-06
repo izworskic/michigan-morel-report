@@ -90,13 +90,13 @@ def build_index():
         {"@type": "WebSite", "@id": SITE + "/#website", "name": "Michigan Morel Report", "url": SITE,
          "description": "Tracks how far north Michigan's soil has warmed into the morel window, region by "
                         "region, against a ten year normal.",
-         "author": {"@id": PERSON_ID}},
+         "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID}},
         {"@type": "WebPage", "@id": url + "#webpage", "url": url,
          "isPartOf": {"@id": SITE + "/#website"},
          "name": "Michigan Morel Report: Where the Season Is Right Now",
          "description": "Live soil warming by region across Michigan, tracking the morel season as it moves "
                         "south to north, measured against a ten year normal.",
-         "inLanguage": "en-US", "author": {"@id": PERSON_ID},
+         "inLanguage": "en-US", "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID},
          "breadcrumb": {"@id": url + "#breadcrumb"}},
         breadcrumb([("Michigan Morel Report", url)]),
         PERSON_NODE,
@@ -499,7 +499,7 @@ def build_region(r):
          "name": f"Morel Season in {r['name']}",
          "description": f"Live soil warming and morel season stage for {r['name']}, covering {r['towns']}.",
          "isPartOf": {"@id": SITE + "/#website"}, "inLanguage": "en-US",
-         "author": {"@id": PERSON_ID}, "breadcrumb": {"@id": url + "#breadcrumb"}},
+         "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID}, "breadcrumb": {"@id": url + "#breadcrumb"}},
         breadcrumb([("Michigan Morel Report", SITE + "/"), (r["name"], url)]),
         PERSON_NODE,
     ]}

@@ -42,6 +42,13 @@ for path in sorted(PUBLIC.glob("*.html")):
     assert people[0].get("@id") == CREATOR_ID, f"{path.name}: incorrect Person ID"
     assert people[0].get("name") == "Chris Izworski", f"{path.name}: incorrect Person name"
     assert people[0].get("url") == CREATOR_HOME, f"{path.name}: Person.url must be the homepage"
+    content_nodes = [node for node in graph if node.get("@type") in {"WebSite", "WebPage", "Article"}]
+    assert content_nodes, f"{path.name}: expected a content node"
+    for node in content_nodes:
+        for field in ("author", "publisher"):
+            ref = node.get(field)
+            assert isinstance(ref, dict) and ref.get("@id") == CREATOR_ID, f"{path.name}: {node.get('@type')} needs canonical {field} reference"
+
     defined_ids = {node.get("@id") for node in graph if node.get("@id")}
     for node in graph:
         for field in ("author", "publisher", "creator"):
