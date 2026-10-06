@@ -1,8 +1,10 @@
 import json, pathlib, sys
-sys.path.insert(0, "/home/claude/mor")
+
+BASE_DIR = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(BASE_DIR))
 from gen_chrome import head, header, FOOTER, SAFETY, breadcrumb, PERSON_NODE, PERSON_ID, SITE
 
-OUT = pathlib.Path("/home/claude/mor/public")
+OUT = BASE_DIR / "public"
 OUT.mkdir(parents=True, exist_ok=True)
 
 REGIONS = [
@@ -88,13 +90,13 @@ def build_index():
         {"@type": "WebSite", "@id": SITE + "/#website", "name": "Michigan Morel Report", "url": SITE,
          "description": "Tracks how far north Michigan's soil has warmed into the morel window, region by "
                         "region, against a ten year normal.",
-         "author": {"@id": PERSON_ID}},
+         "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID}},
         {"@type": "WebPage", "@id": url + "#webpage", "url": url,
          "isPartOf": {"@id": SITE + "/#website"},
          "name": "Michigan Morel Report: Where the Season Is Right Now",
          "description": "Live soil warming by region across Michigan, tracking the morel season as it moves "
                         "south to north, measured against a ten year normal.",
-         "inLanguage": "en-US", "author": {"@id": PERSON_ID},
+         "inLanguage": "en-US", "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID},
          "breadcrumb": {"@id": url + "#breadcrumb"}},
         breadcrumb([("Michigan Morel Report", url)]),
         PERSON_NODE,
@@ -103,7 +105,7 @@ def build_index():
         f'<div class="tile"><h3><a href="/{r["slug"]}.html">{r["name"]}</a></h3>'
         f'<p>{r["towns"]}. {r["blurb"][:118]}...</p></div>' for r in REGIONS)
     body = (
-        header("/") +
+        header("/", homepage_heading=True) +
         '<p class="lede">Morels do not follow a date, they follow the ground warming up. That warming crosses '
         'Michigan from south to north over about five weeks, and this tracks where the front edge of it is right '
         'now, region by region, against what is normal for the date.</p>'
@@ -497,7 +499,7 @@ def build_region(r):
          "name": f"Morel Season in {r['name']}",
          "description": f"Live soil warming and morel season stage for {r['name']}, covering {r['towns']}.",
          "isPartOf": {"@id": SITE + "/#website"}, "inLanguage": "en-US",
-         "author": {"@id": PERSON_ID}, "breadcrumb": {"@id": url + "#breadcrumb"}},
+         "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID}, "breadcrumb": {"@id": url + "#breadcrumb"}},
         breadcrumb([("Michigan Morel Report", SITE + "/"), (r["name"], url)]),
         PERSON_NODE,
     ]}

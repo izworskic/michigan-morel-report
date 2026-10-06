@@ -5,7 +5,7 @@ PERSON_NODE = {
     "@type": "Person",
     "@id": PERSON_ID,
     "name": "Chris Izworski",
-    "url": "https://chrisizworski.com/chris-izworski/",
+    "url": "https://chrisizworski.com/",
     "sameAs": [
         "https://chrisizworski.com",
         "https://michigantroutreport.com/chris-izworski/",
@@ -122,7 +122,8 @@ def head(title, desc, canonical, ld_json):
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         f'<title>{title}</title>'
         f'<meta name="description" content="{desc}">'
-        f'<link rel="canonical" href="{canonical}">'\n        '<link rel="author" href="https://chrisizworski.com/chris-izworski/">'
+        f'<link rel="canonical" href="{canonical}">'
+        '<link rel="author" href="https://chrisizworski.com/chris-izworski/">'
         f'<meta property="og:title" content="{title}">'
         f'<meta property="og:description" content="{desc}">'
         f'<meta property="og:url" content="{canonical}">'
@@ -136,14 +137,16 @@ def head(title, desc, canonical, ld_json):
     )
 
 
-def header(current):
+def header(current, homepage_heading=False):
+    brand_tag = "h1" if homepage_heading else "span"
+    brand_style = ' style="margin:0"' if homepage_heading else ""
     navhtml = "".join(
         f'<a href="{h}"{" aria-current=\"page\"" if h == current else ""}>{t}</a>'
         for h, t in NAV)
     return (
         '<body><div class="page"><div class="wrap">'
         '<header class="site-header"><div class="brandrow">'
-        '<span class="brand">Michigan Morel Report</span>'
+        f'<{brand_tag} class="brand"{brand_style}>Michigan Morel Report</{brand_tag}>'
         '<span class="tag">Tracking the soil as it warms, south to north</span>'
         '<span class="stage" id="season-stage">Loading</span>'
         '</div>'

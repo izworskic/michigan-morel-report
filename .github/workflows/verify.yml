@@ -1,0 +1,27 @@
+name: Verify
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python -m py_compile gen_chrome.py gen_site.py scripts/check_creator_identity.py
+      - run: python gen_site.py
+      - run: python scripts/check_creator_identity.py
+      - run: git diff --exit-code -- public
