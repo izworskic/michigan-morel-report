@@ -137,9 +137,9 @@ def head(title, desc, canonical, ld_json):
     )
 
 
-def header(current):
-    brand_tag = "h1" if current == "/" else "span"
-    brand_style = ' style="margin:0"' if current == "/" else ""
+def header(current, homepage_heading=False):
+    brand_tag = "h1" if homepage_heading else "span"
+    brand_style = ' style="margin:0"' if homepage_heading else ""
     navhtml = "".join(
         f'<a href="{h}"{" aria-current=\"page\"" if h == current else ""}>{t}</a>'
         for h, t in NAV)

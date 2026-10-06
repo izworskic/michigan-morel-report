@@ -31,6 +31,8 @@ assert '<h1 class="brand" style="margin:0">Michigan Morel Report</h1>' in homepa
 
 for path in sorted(PUBLIC.glob("*.html")):
     html = path.read_text(encoding="utf-8")
+    if path.name != "index.html":
+        assert '<span class="brand">Michigan Morel Report</span>' in html, f"{path.name}: keep the shared brand as a non-heading on child pages"
     match = re.search(r'<script type="application/ld\+json">([\s\S]*?)</script>', html)
     assert match, f"{path.name}: missing JSON-LD"
     data = json.loads(match.group(1))

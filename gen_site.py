@@ -105,7 +105,7 @@ def build_index():
         f'<div class="tile"><h3><a href="/{r["slug"]}.html">{r["name"]}</a></h3>'
         f'<p>{r["towns"]}. {r["blurb"][:118]}...</p></div>' for r in REGIONS)
     body = (
-        header("/") +
+        header("/", homepage_heading=True) +
         '<p class="lede">Morels do not follow a date, they follow the ground warming up. That warming crosses '
         'Michigan from south to north over about five weeks, and this tracks where the front edge of it is right '
         'now, region by region, against what is normal for the date.</p>'
