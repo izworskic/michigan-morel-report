@@ -1,8 +1,10 @@
 import json, pathlib, sys
-sys.path.insert(0, "/home/claude/mor")
+
+BASE_DIR = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(BASE_DIR))
 from gen_chrome import head, header, FOOTER, SAFETY, breadcrumb, PERSON_NODE, PERSON_ID, SITE
 
-OUT = pathlib.Path("/home/claude/mor/public")
+OUT = BASE_DIR / "public"
 OUT.mkdir(parents=True, exist_ok=True)
 
 REGIONS = [
