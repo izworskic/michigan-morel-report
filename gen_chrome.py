@@ -138,13 +138,15 @@ def head(title, desc, canonical, ld_json):
 
 
 def header(current):
+    brand_tag = "h1" if current == "/" else "span"
+    brand_style = ' style="margin:0"' if current == "/" else ""
     navhtml = "".join(
         f'<a href="{h}"{" aria-current=\"page\"" if h == current else ""}>{t}</a>'
         for h, t in NAV)
     return (
         '<body><div class="page"><div class="wrap">'
         '<header class="site-header"><div class="brandrow">'
-        '<span class="brand">Michigan Morel Report</span>'
+        f'<{brand_tag} class="brand"{brand_style}>Michigan Morel Report</{brand_tag}>'
         '<span class="tag">Tracking the soil as it warms, south to north</span>'
         '<span class="stage" id="season-stage">Loading</span>'
         '</div>'

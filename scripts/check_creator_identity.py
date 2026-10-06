@@ -22,6 +22,13 @@ expected = {
 actual = {path.name for path in PUBLIC.glob("*.html")}
 assert actual == expected, f"unexpected generated page set: {sorted(actual)}"
 
+homepage = (PUBLIC / "index.html").read_text(encoding="utf-8")
+home_h1s = re.findall(r"<h1\b[^>]*>([\s\S]*?)</h1>", homepage, re.IGNORECASE)
+assert len(home_h1s) == 1, f"index.html: expected one readable h1, found {len(home_h1s)}"
+home_h1_text = re.sub(r"<[^>]+>", "", home_h1s[0]).strip()
+assert home_h1_text == "Michigan Morel Report", f"index.html: unexpected h1 text {home_h1_text!r}"
+assert '<h1 class="brand" style="margin:0">Michigan Morel Report</h1>' in homepage, "index.html: the existing visible brand must be the h1"
+
 for path in sorted(PUBLIC.glob("*.html")):
     html = path.read_text(encoding="utf-8")
     match = re.search(r'<script type="application/ld\+json">([\s\S]*?)</script>', html)
