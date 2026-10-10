@@ -59,8 +59,8 @@ test('regional weather source completeness is visible, not blindly trusted', () 
   assert.ok(n);
   const d = parseACIS(n.observations);
   assert.ok(d.filter(v => v.avg === null).length >= 10);
-  const summary = summarize(d, '2025-05-15');
-  assert.equal(summary.observedThrough, '2025-05-14');
+  const summary = summarize(d, '2025-04-16');
+  assert.equal(summary.observedThrough, '2025-04-13');
   assert.ok(summary.last20.temperatureCoverage < 1);
 });
 test('season-wide station fetch includes March 1 even for late June queries', async () => {
