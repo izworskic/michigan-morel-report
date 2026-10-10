@@ -144,7 +144,10 @@ test('recent snow cover suppresses favorable rating', () => {
   assert.equal(evaluate(h, [todayForecast()])[0].verdict, 'Snow covered');
 });
 test('late spring cool rebound does not reopen a concluded season', () => {
-  const obs = [...sample(10, 72), ...Array.from({ length: 19 }, (_, i) => {
+  const hotStart = Array.from({ length: 10 }, (_, i) => ({
+    date: addDays(TODAY, i - 29), avg: 72, rain: 0.1, snowDepth: 0
+  }));
+  const obs = [...hotStart, ...Array.from({ length: 19 }, (_, i) => {
     const date = addDays(TODAY, i - 19);
     return { date, avg: 55, rain: 0.2, snowDepth: 0 };
   })];
