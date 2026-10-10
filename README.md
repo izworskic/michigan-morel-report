@@ -63,3 +63,7 @@ node --check api/outlook.js
 node --check public/outlook.js
 node --experimental-default-type=module --test tests/outlook.test.mjs
 \`\`\`
+
+
+## Engine hardening (October 2026)
+Weather verdicts now come from the standalone versioned `lib/morel-engine.js`, and supported geographic areas are registered in `lib/morel-regions.js`. This preserves the existing five Michigan regional charts while allowing later state and subregional expansion without duplicating the evaluator. Improvements: ACIS missing/accumulated-value handling, nearby/stale station selection, crossing-midnight NWS rainfall interval allocation, observed-versus-forecast rain timing, forward-data abstention, snow/freezing guards, and ecological profile gating. See `docs/engine-and-national-rollout.md` for test standards and the national breakdown. The model is still experimental and has **not** been calibrated on multi-year field emergence observations.
