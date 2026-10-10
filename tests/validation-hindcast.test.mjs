@@ -8,7 +8,7 @@ test('real four-season sighting records can be re-simulated without raw location
  assert.equal(s.overall.sightingAreaDays,216);
  assert.equal(s.overall.observations,542);
  assert.equal(s.reportAreaDaysNotMapped,0);
- assert.equal(s.distinctStationYearGroups,20);
+ assert.equal(s.distinctStationYearGroups,19); // no mapped 2023 Eastern UP observations
  assert.equal(s.overall.metrics.strict.hit,61);
  assert.equal(s.overall.metrics.broad.hit,118);
  assert.equal(s.overall.metrics.tempOnly.hit,128);
