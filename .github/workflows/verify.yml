@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.x"
       - run: python -m py_compile gen_chrome.py gen_site.py scripts/check_creator_identity.py
-      - run: node --check api/outlook.js && node --check public/outlook.js && node --check public/morel.js
+      - run: node --check lib/morel-engine.js && node --check lib/morel-regions.js && node --check api/outlook.js && node --check public/outlook.js && node --check public/morel.js
       - run: node --experimental-default-type=module --test tests/outlook.test.mjs
       - run: python gen_site.py
       - run: python scripts/check_creator_identity.py
