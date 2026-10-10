@@ -37,3 +37,29 @@ It also publishes nobody's spots. It tells you when, and leaves where to you.
 
 ## Build
 `python3 gen_site.py` regenerates all pages into `public/`.
+
+
+## Seven-day hunting outlook (experimental)
+
+The original south-to-north warming board is unchanged. A separate \`/api/outlook?region=central-michigan\` endpoint powers a weather-aware panel on the home page and five regional pages. It returns:
+- ACIS station daily maximum/minimum temperature, precipitation (\`pcpn\`), and optional snow depth (\`snwd\`), checking completeness before drawing conclusions. A missing rainfall record is **not** zero rain.
+- Observed 3-, 7-, 14-, and 30-day rain summaries, seven-day mean air warmth, and exploratory 20-day degree-days over 32°F.
+- NWS \`/points\` period forecasts (high, low, precipitation chance) plus gridded quantitative precipitation when available. If unavailable, the page identifies the missing source rather than guessing.
+- Qualitative daily conditions for the next week, snow/freeze cautions, confidence/age labels and a hard off-season gate. The model does not output a probability of finding morels.
+
+The example 0.15-inch and 0.25-inch rain thresholds are **uncalibrated screening rules**, not field-validated Michigan emergence thresholds. Observations are regional (one representative station); NWS weather is forecast for a representative town, not a forest floor. Morel species, snow melt, slope/aspect, canopy, tree associations and soil moisture sensors cannot yet be resolved for a specific hunting spot. Local thermometers and field observations remain essential.
+
+The annual GDD bar is cumulative warmth above 50°F since March 1, compared with the same-date ten-year ACIS normal. It is not a fruiting probability. The 20-day degree-day metric uses **base 32°F**, is separate from the chart, and should not be treated as a transferable threshold from studies elsewhere.
+
+Research and source references:
+- Jeanne Mihail, "Is It Time for Morels Yet?", North American Mycological Association: https://namyco.org/publications/mcilvainea-journal-of-american-amateur-mycology/is-it-time-for-morels-yet/
+- ACIS API specification: https://docs.rcc-acis.org/acisws/
+- NWS API documentation: https://www.weather.gov/documentation/services-web-api
+- Michigan mushroom guidance: https://www.canr.msu.edu/news/morels
+
+Run syntax and model tests:
+\`\`\`sh
+node --check api/outlook.js
+node --check public/outlook.js
+node --experimental-default-type=module --test tests/outlook.test.mjs
+\`\`\`
