@@ -48,17 +48,17 @@ function rain(x) {
   const n = temp(x);
   return n !== null && n >= 0 ? n : null;
 }
-function parseACIS(rows) {
+export function parseACIS(rows) {
   return rows.map(row => {
     const high = temp(row[1]), low = temp(row[2]);
     return {
       date: row[0], high, low,
       avg: high === null || low === null ? null : (high + low) / 2,
-      rain: rain(row[3])
+      rain: rain(row[3]), snowDepth: rain(row[4])
     };
   });
 }
-function summarize(observations, today) {
+export function summarize(observations, today) {
   const byDate = new Map(observations.map(d => [d.date, d]));
   const end = addDays(today, -1); // never count a partial "today" as a complete dry day
   function window(n) {
@@ -82,17 +82,19 @@ function summarize(observations, today) {
         history.reduce((a, v) => a + v.avg, 0) / 7 >= 68) crossed = true;
   }
   const lastTemp = full.length ? full[full.length - 1].date : null;
+  const freshSnow = [today, addDays(today, -1), addDays(today, -2)].map(d => byDate.get(d)?.snowDepth).find(v => v !== undefined && v !== null);
   const ageDays = lastTemp ? Math.round((Date.parse(today + 'T12:00:00Z') - Date.parse(lastTemp + 'T12:00:00Z')) / 86400000) : null;
   return {
     observedThrough: lastTemp,
     observationAgeDays: ageDays,
+    recentSnowDepthIn: freshSnow === undefined ? null : freshSnow,
     last3: window(3), last7: window(7), last14: window(14),
     last20: window(20), last30: window(30),
     peakedThisSpring: crossed,
     recentMeans: Array.from({ length: 7 }, (_, i) => byDate.get(addDays(end, -6 + i))?.avg ?? null)
   };
 }
-function forecastDays(periods, qpfValues, today) {
+export function forecastDays(periods, qpfValues, today) {
   const days = new Map();
   for (const p of periods) {
     if (!p.startTime || !Number.isFinite(p.temperature)) continue;
@@ -131,7 +133,7 @@ async function getForecast(region, today) {
   const qpf = result[1].status === 'fulfilled' ? result[1].value?.properties?.quantitativePrecipitation?.values : null;
   return { days: forecastDays(result[0].value.properties.periods, qpf, today), hasRainAmounts: Array.isArray(qpf) };
 }
-function evaluate(history, forecast) {
+export function evaluate(history, forecast) {
   if (!history || !history.last7 || history.last7.meanF === null || history.observationAgeDays > 3)
     return forecast.map(day => ({ ...day, verdict: 'Data limited', why: 'Recent station temperatures are missing or stale.', confidence: 'low' }));
   if (history.last14.rainCoverage < 0.8)
@@ -146,11 +148,15 @@ function evaluate(history, forecast) {
     const projectedMean = trailing.every(t => t !== null)
       ? trailing.reduce((a, t) => a + t, 0) / 7 : null;
     const warmth = projectedMean === null ? history.last7.meanF : projectedMean;
-    const initialRain = historicRain !== null && historicRain >= 0.25;
+    const initialRain = i <= 3 && historicRain !== null && historicRain >= 0.25;
     const supportedForecastRain = day.forecastRainIn !== null && day.forecastRainIn >= 0.15;
     const recentForecastRain = forecastRainSoFar >= 0.15 && lastRainDate !== null && i - lastRainDate <= 3;
     let verdict = 'Watch', why = 'The seasonal and moisture pattern is mixed.';
-    if (history.peakedThisSpring || warmth >= 68) {
+    if (history.recentSnowDepthIn !== null && history.recentSnowDepthIn >= 1) {
+      verdict = 'Snow covered'; why = 'The reporting station has recent snow cover; forest conditions may differ.';
+    } else if (day.lowF !== null && day.lowF <= 28) {
+      verdict = 'Freeze risk'; why = 'A hard overnight freeze is forecast; check soil and delay hunting expectations.';
+    } else if (history.peakedThisSpring || warmth >= 68) {
       verdict = 'Window past'; why = 'Sustained seasonal warmth has passed the model window.';
     } else if (warmth < 45) {
       verdict = 'Too cold'; why = 'The seven-day air-temperature trend is still too cool.';
@@ -197,7 +203,7 @@ export default async function handler(request) {
     try {
       const data = await getJSON(ACIS, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid, sdate: start, edate: today, elems: 'maxt,mint,pcpn' })
+        body: JSON.stringify({ uid, sdate: start, edate: today, elems: 'maxt,mint,pcpn,snwd' })
       });
       if (!Array.isArray(data.data)) continue;
       const summary = summarize(parseACIS(data.data), today);
@@ -222,7 +228,7 @@ export default async function handler(request) {
     notes: [
       'Growing degree days base 50 F are a seasonal context measure, not a morel fruiting probability.',
       'The rolling 20-day heat measure uses base 32 F for exploration; Michigan-specific thresholds are not validated.',
-      'Precipitation is measured at a regional weather station, not in forest soil; rain forecasts are provisional.',
+      'Precipitation and snow depth are measured at a regional station, not in forest soil; rain forecasts are provisional.',
       'A favorable pattern is not confirmation that mushrooms have emerged. Check local soil and habitat.'
     ]
   });
