@@ -133,6 +133,19 @@ test('a six-hour data gap never fabricates a future mean or green rating', () =>
   assert.equal(d[0].projected7DayAirMeanF, null);
   assert.equal(d[0].verdict, 'Data limited');
 });
+test('NWS Tonight first-day partial forecast does not invalidate all six later days', () => {
+  const h = withRecentEvent();
+  const later = [todayForecast({ highF: null }),
+    { date: addDays(TODAY, 1), highF: 66, lowF: 46, forecastRainIn: null },
+    { date: addDays(TODAY, 2), highF: 66, lowF: 46, forecastRainIn: null }];
+  const result = evaluate(h, later);
+  assert.equal(result[0].verdict, 'Data limited');
+  assert.equal(result[1].partialForecastGap, true);
+  assert.equal(result[1].confidence, 'low');
+  assert.equal(result[1].projected7DayAirMeanF, null);
+  assert.notEqual(result[1].verdict, 'Favorable pattern');
+  assert.notEqual(result[1].verdict, 'Data limited');
+});
 test('hard freeze overrides otherwise favorable warmth/moisture', () => {
   const h = withRecentEvent();
   assert.equal(evaluate(h, [todayForecast({ lowF: 25 })])[0].verdict, 'Freeze risk');
