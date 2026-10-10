@@ -156,6 +156,19 @@
       .catch(function () { render(null); });
   }
 
+  // Load the optional hunting outlook only on the region and home pages.
+  // The original seasonal wave still renders if this separate layer fails.
+  if (/^\/(?:index\.html|southern-michigan\.html|central-michigan\.html|northern-lower\.html|eastern-up\.html|western-up\.html)?$/.test(window.location.pathname)) {
+    function showOutlook() {
+      var tag = document.createElement('script');
+      tag.src = '/outlook.js';
+      tag.async = true;
+      document.body.appendChild(tag);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showOutlook);
+    else showOutlook();
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else { boot(); }
