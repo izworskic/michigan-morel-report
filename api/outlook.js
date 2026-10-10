@@ -23,11 +23,13 @@ async function getJSON(url, options = {}) {
     return data;
   } finally { clearTimeout(timer); }
 }
-async function station(uid, today) {
+export async function station(uid, today) {
   // Fetch through the last complete day, not the current partial day.
   const yesterday = addDays(today, -1);
   const march1 = today.slice(0, 4) + '-03-01';
-  const start = addDays(today, -35) > march1 ? addDays(today, -35) : march1;
+  // Preserve the whole spring, not just the last 35 days: after a sustained
+  // hot spell the morel window must not reopen on a later cool rebound.
+  const start = march1;
   const response = await getJSON(ACIS, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
