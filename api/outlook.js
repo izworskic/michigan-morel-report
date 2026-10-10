@@ -5,19 +5,12 @@ import {
   MODEL_VERSION, MODEL_KIND, localDate, addDays, parseACIS, summarize,
   forecastDays, evaluate, rankStationCandidates
 } from '../lib/morel-engine.js';
+import { REGION_BY_ID, AREA_SCHEMA_VERSION } from '../lib/morel-regions.js';
 export { parseACIS, summarize, forecastDays, evaluate };
 export const config = { runtime: 'edge' };
 
 const ACIS = 'https://data.rcc-acis.org/StnData';
 const NWS = 'https://api.weather.gov';
-const ZONE = 'America/Detroit';
-const REGIONS = {
-  'southern-michigan': { name: 'Southern Michigan', place: 'Grand Rapids', lat: 42.9634, lon: -85.6681, uids: [9835, 9721, 69, 31532], profile: MODEL_KIND },
-  'central-michigan': { name: 'Central Michigan', place: 'Saginaw / Bay City', lat: 43.5945, lon: -83.8889, uids: [31805, 70, 9846], profile: MODEL_KIND },
-  'northern-lower': { name: 'Northern Lower', place: 'Gaylord', lat: 45.0275, lon: -84.6748, uids: [10051, 29345, 10021, 29645], profile: MODEL_KIND },
-  'eastern-up': { name: 'Eastern Upper Peninsula', place: 'Sault Ste. Marie', lat: 46.4977, lon: -84.3476, uids: [10158, 10149, 10091], profile: MODEL_KIND },
-  'western-up': { name: 'Western Upper Peninsula', place: 'Marquette', lat: 46.5436, lon: -87.3954, uids: [71, 10105, 29678], profile: MODEL_KIND }
-};
 const USER_AGENT = { 'User-Agent': 'MichiganMorelReport/3.0 (https://morel.chrisizworski.com)',
   'Accept': 'application/geo+json, application/json' };
 async function getJSON(url, options = {}) {
@@ -62,7 +55,7 @@ async function forecast(region, today) {
   // Do not misinterpret unsupported precipitation units as millimeters.
   const unit = grid?.uom || grid?.unitCode || 'wmoUnit:mm';
   const amounts = unit === 'wmoUnit:mm' && Array.isArray(grid?.values) ? grid.values : null;
-  const days = forecastDays(periods, amounts, today, ZONE);
+  const days = forecastDays(periods, amounts, today, region.timeZone);
   return { days, hasRainAmounts: days.some(d => d.forecastRainIn !== null),
     qpfSource: amounts ? 'NWS gridded quantitative precipitation' : 'unavailable' };
 }
@@ -74,12 +67,13 @@ const respond = (body, status = 200) => new Response(JSON.stringify(body), {
 });
 export default async function handler(request) {
   const slug = new URL(request.url).searchParams.get('region') || 'central-michigan';
-  const region = REGIONS[slug];
+  const region = REGION_BY_ID[slug];
   if (!region) return respond({ ok: false, error: 'Unsupported region: no verified weather station and ecological profile.' }, 400);
   const now = new Date();
-  const today = localDate(now, ZONE), month = Number(today.slice(5, 7));
+  const today = localDate(now, region.timeZone), month = Number(today.slice(5, 7));
   const base = {
-    ok: true, modelVersion: MODEL_VERSION, modelProfile: region.profile,
+    ok: true, modelVersion: MODEL_VERSION, areaSchemaVersion: AREA_SCHEMA_VERSION,
+    modelProfile: region.profile, geography: { country: region.country, zone: region.zone, state: region.state },
     region: slug, name: region.name, forecastPoint: region.place,
     generatedAt: now.toISOString(),
     model: 'Experimental Michigan eastern morel weather pattern, not measured forest soil or a calibrated probability.'
