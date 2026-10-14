@@ -164,9 +164,9 @@ def build_index():
         + FOOTER
     )
     (OUT / "index.html").write_text(head(
-        "Michigan Morel Report: Where the Season Is Right Now, South to North",
-        "Live soil warming by region across Michigan, tracking the morel season as it moves south to north over "
-        "about five weeks, measured against a ten year normal.",
+        "Michigan Morel Report 2027: Soil Warming and Regional Timing",
+        "2027 Michigan morel season guide: follow soil warming south to north across five regions over "
+        "about five weeks, with GDD compared against a ten year normal.",
         url, ld) + body)
 
 
@@ -254,8 +254,8 @@ def build_when():
         + FOOTER
     )
     (OUT / "when-morels-come-up.html").write_text(head(
-        "When Do Morels Come Up in Michigan? Soil Temperature Is the Trigger",
-        "Soil temperature triggers morel fruiting. Why Michigan's season runs five weeks from south to north, "
+        "When Do Morels Come Up in Michigan? 2027 Soil Temperature Trigger",
+        "Michigan morels in 2027: the soil-temperature trigger, the south-to-north timing wave, "
         "how this site models soil warming from air temperature, and where that model is weak.",
         url, ld) + body)
 
@@ -264,7 +264,7 @@ def build_false():
     url = SITE + "/false-morels.html"
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "Article", "@id": url + "#article",
-         "headline": "False Morels in Michigan: Why This Matters More Than Timing",
+         "headline": "False Morels in Michigan 2027: Why Timing Is the Easy Part",
          "description": "False morels grow in the same Michigan woods at the same time as true morels, some "
                         "contain gyromitrin, and people are poisoned every spring. How to learn identification "
                         "properly.",
@@ -275,10 +275,10 @@ def build_false():
     ]}
     body = (
         header("/false-morels.html") +
-        '<h1 style="font-size:30px;margin:22px 0 0">False morels, and why this page exists</h1>'
+        '<h1 style="font-size:30px;margin:22px 0 0">False Morels in Michigan 2027: Why Timing Is the Easy Part</h1>'
         '<p class="lede">This is the one subject on this site where being approximately right is not good enough. '
         'The rest of these pages are about timing. This one is about not getting hurt.</p>'
-        + SAFETY +
+        + SAFETY.replace(' <a href="/false-morels.html">What false morels look like</a>.', '') +
 
         '<h2>What the problem actually is</h2>'
         '<p>False morels are a group of unrelated fungi that superficially resemble true morels and fruit in the '
@@ -337,8 +337,8 @@ def build_false():
         + FOOTER
     )
     (OUT / "false-morels.html").write_text(head(
-        "False Morels in Michigan: Why Timing Is the Easy Part",
-        "False morels grow in the same Michigan woods at the same time as true morels and some contain "
+        "False Morels in Michigan 2027: Why Timing Is the Easy Part",
+        "2027 Michigan false-morel safety: lookalikes can grow beside true morels and some contain "
         "gyromitrin. Why this site will not teach identification from a screen, and how to learn properly.",
         url, ld) + body)
 
@@ -411,8 +411,8 @@ def build_where():
         + FOOTER
     )
     (OUT / "where-morels-grow.html").write_text(head(
-        "Where Morels Grow in Michigan: Ash, Elm, Slopes, and Burns",
-        "The habitat morels associate with in Michigan, from ash and elm to south facing slopes early and shaded "
+        "Where Morels Grow in Michigan 2027: Ash, Elm, Slopes, and Burns",
+        "Where to scout for Michigan morels in 2027: ash and elm, sun-warmed slopes early, shaded "
         "ground late, plus why recently burned forest produces and where to check access.",
         url, ld) + body)
 
@@ -485,19 +485,27 @@ def build_indicators():
         + FOOTER
     )
     (OUT / "indicator-plants.html").write_text(head(
-        "Morel Indicator Plants in Michigan: Trillium, Fiddleheads, Lilac",
-        "Trillium, fiddleheads and lilac track the same soil warming that triggers morels, at the scale of the "
+        "Michigan Morel Indicator Plants 2027: Trillium, Fiddleheads, Lilac",
+        "2027 morel indicator plants in Michigan: trillium, fiddleheads and lilac reveal warming at the scale of the "
         "ground under your feet rather than a weather station forty miles away.",
         url, ld) + body)
 
+
+REGION_META = {
+    "southern-michigan": {"title": "Southern Michigan Morel Season 2027: First Ground to Warm", "description": "Southern Michigan morels in 2027: track the first soil-warming window around Kalamazoo, Jackson and Ann Arbor, plus hardwood river-bottom scouting."},
+    "central-michigan": {"title": "Central Michigan Morels 2027: River Woodlots and Timing", "description": "2027 central Michigan morel timing around Lansing, Saginaw and Flint: follow soil-warming stages and scout hardwood woodlots and river corridors."},
+    "northern-lower": {"title": "Northern Lower Michigan Morels 2027: Mesick and Gaylord Timing", "description": "2027 morel timing in northern Lower Michigan: follow warming around Cadillac, Mesick, Traverse City and Gaylord; compare elevation and slope."},
+    "eastern-up": {"title": "Eastern UP Morel Season 2027: Follow the Late Spring Wave", "description": "2027 eastern Upper Peninsula morels: follow the later warming window near Sault Ste. Marie, Newberry and Escanaba, without assuming a fixed date."},
+    "western-up": {"title": "Western UP Morels 2027: Burns and Late Season Timing", "description": "2027 western Upper Peninsula morels: follow late spring soil warming near Marquette, Iron Mountain and Ironwood, and learn about burn-area habitat."},
+}
 
 def build_region(r):
     url = SITE + f"/{r['slug']}.html"
     others = [x for x in REGIONS if x["slug"] != r["slug"]]
     ld = {"@context": "https://schema.org", "@graph": [
         {"@type": "WebPage", "@id": url + "#webpage", "url": url,
-         "name": f"Morel Season in {r['name']}",
-         "description": f"Live soil warming and morel season stage for {r['name']}, covering {r['towns']}.",
+         "name": REGION_META[r["slug"]]["title"],
+         "description": REGION_META[r["slug"]]["description"],
          "isPartOf": {"@id": SITE + "/#website"}, "inLanguage": "en-US",
          "author": {"@id": PERSON_ID}, "publisher": {"@id": PERSON_ID}, "breadcrumb": {"@id": url + "#breadcrumb"}},
         breadcrumb([("Michigan Morel Report", SITE + "/"), (r["name"], url)]),
@@ -506,7 +514,7 @@ def build_region(r):
     detail = "".join(f"<p>{p}</p>" for p in r["detail"].split("\n\n"))
     tiles = "".join(
         f'<div class="tile"><h3><a href="/{o["slug"]}.html">{o["name"]}</a></h3>'
-        f'<p>{o["towns"]}. Opened {o["opened2026"]} in 2026.</p></div>' for o in others[:3])
+        f'<p>{o["towns"]}. Opened {o["opened2026"]} in 2026.</p></div>' for o in others)
     body = (
         header("/") +
         f'<h1 style="font-size:30px;margin:22px 0 0">Morel season in {r["name"]}</h1>'
@@ -536,7 +544,7 @@ def build_region(r):
         '<h2>Where the rest of the state is</h2>'
         '<p>Morel season is a wave, so the useful question is not only what is happening here but how far the '
         'front has moved. If this region has finished, the answer is north.</p>'
-        f'<div class="grid three">{tiles}</div>'
+        f'<div class="grid two">{tiles}</div>'
         '<h2>Related</h2>'
         '<div class="anchor-list">'
         '<a href="/">Statewide board</a><a href="/when-morels-come-up.html">What triggers them</a>'
@@ -546,9 +554,8 @@ def build_region(r):
         + FOOTER
     )
     (OUT / f"{r['slug']}.html").write_text(head(
-        f"Morel Season in {r['name']}: Live Soil Warming and Timing",
-        f"Live soil warming and morel season stage for {r['name']}, covering {r['towns']}, measured against a ten "
-        f"year normal.",
+        REGION_META[r["slug"]]["title"],
+        REGION_META[r["slug"]]["description"],
         url, ld) + body)
 
 

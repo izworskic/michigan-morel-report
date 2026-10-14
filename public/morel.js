@@ -8,6 +8,19 @@
   'use strict';
 
   var ORDER = ['southern-michigan', 'central-michigan', 'northern-lower', 'eastern-up', 'western-up'];
+  var NAMES = {
+    'southern-michigan': 'Southern Michigan',
+    'central-michigan': 'Central Michigan',
+    'northern-lower': 'Northern Lower',
+    'eastern-up': 'Eastern Upper Peninsula',
+    'western-up': 'Western Upper Peninsula'
+  };
+  // The spring-only calendar gate must override partial or stale readings.
+  function isOffseasonNow() {
+    var month = Number(new Intl.DateTimeFormat('en-US',
+      { timeZone: 'America/Detroit', month: 'numeric' }).format(new Date()));
+    return month < 3 || month > 6;
+  }
 
   function set(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; }
   function fmt(n, dp) {
@@ -18,7 +31,7 @@
   function stamp(iso) {
     try {
       return new Date(iso).toLocaleString('en-US',
-        { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
     } catch (e) { return iso; }
   }
 
@@ -51,19 +64,28 @@
 
   function render(data) {
     var wave = document.getElementById('wave');
-    if (!data || !data.regions) {
-      if (wave) wave.innerHTML = '<div class="wave-cell">Could not load station data right now.</div>';
-      set('the-read', 'The station feed is not reachable at the moment.');
-      return;
-    }
-
+    var calendarOffseason = isOffseasonNow();
+    var feedOk = !!(data && Array.isArray(data.regions));
     var byslug = {};
-    data.regions.forEach(function (r) { byslug[r.slug] = r; });
-    var ordered = ORDER.map(function (s) { return byslug[s]; }).filter(Boolean);
+    if (feedOk) data.regions.forEach(function (r) {
+      if (r && r.slug) byslug[r.slug] = r;
+    });
+    // Missing station data never erases a region row or invents a reading.
+    var ordered = ORDER.map(function (s) {
+      return byslug[s] || {
+        slug: s, name: NAMES[s], towns: 'Station readings unavailable',
+        trailing7dayF: null, gddBase50: null, normal: null, stage: null
+      };
+    });
 
     if (wave) {
       wave.innerHTML = ordered.map(function (r) {
-        var st = r.stage || {};
+        var st = calendarOffseason
+          ? { key: 'offseason', label: 'Off season',
+              why: 'Morels fruit in spring. Tracking resumes in March.' }
+          : (r.stage && r.stage.key && r.stage.label ? r.stage
+            : { key: 'unknown', label: 'No data',
+                why: 'Station data unavailable for this region.' });
         return '<div class="wave-row">' +
           '<div class="wave-cell">' +
             '<div class="wave-name"><a href="/' + r.slug + '.html">' + esc(r.name) + '</a></div>' +
@@ -82,15 +104,17 @@
     }
 
     var prime = ordered.filter(function (r) { return r.stage && r.stage.key === 'prime'; });
-    var offseason = ordered.length && ordered.every(function (r) {
+    var offseason = calendarOffseason || ordered.every(function (r) {
       return r.stage && r.stage.key === 'offseason';
     });
 
-    set('s-season', offseason ? 'Off' : (prime.length ? 'Open' : 'Between'));
+    set('s-season', offseason ? 'Off' : (!feedOk ? 'Unavailable' : (prime.length ? 'Open' : 'Between')));
     set('s-season-sub', offseason ? 'resumes in March' : 'statewide');
     set('s-prime', offseason ? '0' : String(prime.length));
 
-    var warmest = ordered.filter(function (r) { return r.trailing7dayF !== null; })
+    var warmest = ordered.filter(function (r) {
+      return r.trailing7dayF !== null && r.trailing7dayF !== undefined;
+    })
       .sort(function (a, b) { return b.trailing7dayF - a.trailing7dayF; })[0];
     set('s-front', warmest ? warmest.name.replace(' Upper Peninsula', ' UP') : 'n/a');
 
@@ -104,8 +128,8 @@
 
     var stageEl = document.getElementById('season-stage');
     if (stageEl) {
-      stageEl.textContent = offseason ? 'Off season'
-        : (prime.length ? prime[0].name.replace(' Upper Peninsula', ' UP') + ' in window' : 'Between windows');
+      stageEl.textContent = offseason ? 'Off season' : (!feedOk ? 'Data unavailable'
+        : (prime.length ? prime[0].name.replace(' Upper Peninsula', ' UP') + ' in window' : 'Between windows'));
     }
 
     var parts = [];
@@ -114,6 +138,8 @@
         'accumulating warmth again from the first of the month.');
       parts.push('Out of season the useful work is scouting: learning to recognise ash and elm before the leaves ' +
         'are out, and finding ground you can come back to.');
+    } else if (!feedOk) {
+      parts.push('The station feed is not reachable at the moment; no current morel timing claim is available.');
     } else if (prime.length) {
       parts.push(prime.map(function (r) { return r.name; }).join(' and ') +
         (prime.length > 1 ? ' are' : ' is') + ' in the modelled window.');
@@ -137,19 +163,22 @@
     set('the-read', parts.join(' '));
 
     set('read-stamp', 'Station data from the Applied Climate Information System' +
-      (data.generatedAt ? ', assembled ' + stamp(data.generatedAt) : '') +
-      '. Model: ' + (data.model || '') + '.');
+      (data && data.generatedAt ? ', assembled ' + stamp(data.generatedAt) : '') +
+      '. Model: ' + (data && data.model || 'no current station feed') + '.');
 
     var ws = document.getElementById('wave-stamp');
     if (ws) {
       ws.textContent = 'Bars show accumulated growing degree days against a ten year normal for the same date, ' +
         'scaled so normal sits at the midline. Past the midline means this spring is running warm. ' +
-        (data.caveat || '');
+        (data && data.caveat || 'Soil warming is modelled from air temperature; no current station read is available.');
     }
   }
 
   function boot() {
-    if (!document.getElementById('wave') && !document.getElementById('the-read')) return;
+    if (!document.getElementById('wave') && !document.getElementById('the-read')
+        && !document.getElementById('season-stage')) return;
+    // Safety-only guide has no wave board but must still resolve its badge.
+    set('season-stage', isOffseasonNow() ? 'Off season' : 'Checking season');
     fetch('/api/morel')
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(render)
